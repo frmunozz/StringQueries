@@ -1,2 +1,2 @@
 # StringQueries
-Perform string queries over a text using suffix tree
+Perform string queries over a text using oldsuffix tree
