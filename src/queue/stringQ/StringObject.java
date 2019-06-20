@@ -2,8 +2,17 @@ package queue.stringQ;
 
 import queue.IQObject;
 
+/**
+ * String Object that implements the Queue Object Interface and is used in the String Priorirty Queue
+ */
 public class StringObject implements IQObject {
+    /**
+     * The string stored in the Queue
+     */
     private String obj;
+    /**
+     * The count number stored in the Queue used as priority (higher the better)
+     */
     private int count;
 
     public StringObject(String str, int count){

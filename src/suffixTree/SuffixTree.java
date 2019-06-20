@@ -11,55 +11,70 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Suffix Tree class where all the logic and methods are defined, where you can find the four principal functions
+ *
+ * - search
+ * - count
+ * - locate
+ * - top-K-Q
+ *
+ * @author Francisco Muñoz
+ */
 public class SuffixTree {
+    /**
+     * text that is going to be used in the suffix tree
+     */
     private String text;
+    /**
+     * save the text length to simplify notation
+     */
     private int textLength;
+    /**
+     * root Queue of nodes which will store the first nodes in the Suffix Tree
+     */
     private NodeQueue root;
+    /**
+     * the maximum number of nodes per level, this number correspond to the addition
+     * of 26 alphabet letters, 10 numbers and 5 special characters ' ' , '-' , '#' %' '?'
+     */
     private static final int maxSize = 41;
-    private int foo;
+    /**
+     * internal variable that will store the number of nodes present in the Suffix Tree
+     */
+    private int counterOfNodes;
 
     public SuffixTree(String text){
         this.text = text;
         this.textLength = text.length();
         this.root = new NodeQueue(maxSize);
+        this.counterOfNodes = 0;
         buildTree();
     }
 
+    /**
+     * function to build the Suffix tree given the text
+     */
     private void buildTree(){
         for (int i = 0; i < textLength - 1; i++){
-            if (i == 556007)
-                System.out.println("debug");
-//            System.out.println("adding: " + i + ", <" + text.substring(i) + ">");
-            foo = i;
             insertSuffix(i);
-//            System.out.println("===============");
-//            visualize();
-//            System.out.println("===============");
         }
     }
 
+    /**
+     * insert a new suffix to the Suffix Tree, this is given the the starting position
+     * of the suffix in the Text string.
+     * @param i the starting position of the suffix.
+     */
     private void insertSuffix(int i){
         Node node;
         Pointer p;
         int k;
         for (k = 0; k < root.size(); k++){
             node = root.getNode(k);
-            if (i == 556007){
-//                String dummy1 = text.substring(node.getKey().getPosition(), node.getKey().getPosition() + 5);
-//                String dummy2 = text.substring(i, i + 5);
-                StringBuilder sb = new StringBuilder();
-                for (int w = 0; w < node.childrenSize(); w++){
-                    sb.append("<");
-                    sb.append(text.charAt(node.getChild(w).getKey().getPosition()));
-                    sb.append(">, ");
-                }
-                String dummy3 = sb.toString();
-                foo = i;
-            }
             if (node.matchFirstChar(i, text)){
                 p = new Pointer(textLength - i, i);
                 innerInsert(node, p);
-//                node.addCount(1);
                 node.getKey().addOtherPosition(i);
                 root.reSort(k);
                 break;
@@ -70,6 +85,12 @@ public class SuffixTree {
         }
     }
 
+    /**
+     * internal function that insert a Suffix (encapsulated in a class Pointer) to a given Node,
+     * this funciton will look recursevely in the nodes until it finds a match in the characters
+     * @param node The current node used to look for a match in characters
+     * @param p the suffix Pointer that will be inserted
+     */
     private void innerInsert(Node node, Pointer p) {
         IPointer np = node.getKey();
         int pos = splitPosition(np, p);
@@ -97,6 +118,16 @@ public class SuffixTree {
         }
     }
 
+    /**
+     * insert a Pointer Suffix in the given Node considering that both have the first 'pos' characters equals.
+     * if the 'pos' is equal to the length of the Node key, then a new child fr the node is created, otherwise,
+     * the node should be split in a way that the node content will be a father with two children, the current node
+     * content and the new Pointer suffix.
+     *
+     * @param node the node where the Pointer suffix will be added
+     * @param p the Pointer suffix to be added
+     * @param pos the position of bifurcation between the two keys
+     */
     private void insert(Node node, Pointer p, int pos){
         if (pos == node.getKey().getLength()){
             extend(node, p, pos);
@@ -106,18 +137,38 @@ public class SuffixTree {
         }
     }
 
+    /**
+     * extend a node adding a new child using as key the Pointer suffix 'p' taking his suffix
+     * starting from position 'pos'
+     *
+     * @param node the node where the new child will be created
+     * @param p the Pointer suffix to be used in the new child
+     * @param pos the position where the sub-suffix of the Pointer suffix will start
+     */
     private void extend(Node node, Pointer p, int pos){
         if (node.isLeaf()){
             node.mutate();
         }
         p.forward(pos);
-        if (node.childrenSize() == 41){
-//            visualize_f(node, ":: ");
-            System.out.println("rebased node!!!");
-        }
         node.addChild(new Node(p));
+        this.counterOfNodes++;
     }
 
+    /**
+     * split a node, creating two Node children:
+     *
+     * One will use as key a suffix of Pointer 'p' starting from position 'pos' and will be a leaf (no children)
+     *
+     * The other will use as key a suffix of Node key starting from position 'pos' and will be an internal node using
+     * as children the children's Node.
+     *
+     * Then the node will cut his Key taking the prefix util position 'pos' and will clear his children to the add as
+     * the only two children the two new Node created before.
+     *
+     * @param node The node to be split
+     * @param p the new key to be used in a child
+     * @param pos the position used to get the suffix and prefix.
+     */
     private void split(Node node, Pointer p, int pos){
         Pointer p0 = new Pointer
                 (node.getKey().getLength() - pos, node.getKey().getPosition() + pos);
@@ -135,11 +186,16 @@ public class SuffixTree {
             node.clearChildren();
         }
         node.addChild(c1);
-        if (node.childrenSize() == 41)
-            System.out.println("rebased node!!!");
         node.addChild(c0);
+        this.counterOfNodes++;
     }
 
+    /**
+     * Search in the Node recursive Structure for an String, this a first step method that will
+     * search in every Node in 'root', calling a second step method 'innerSearch'
+     * @param str the string that will be searched
+     * @return The node where the match happens
+     */
     private Node nodeSearch(String str){
         Node result = null;
         Node outRootNode;
@@ -154,6 +210,12 @@ public class SuffixTree {
         return result;
     }
 
+    /**
+     * Search in the Node recursive Structure for an String, but this will just give the root Node where
+     * the march of the first character happens
+     * @param str the string that will be searched
+     * @return the root node where the match of first character happens
+     */
     private Node nodeSearchRoot(String str){
         Node result = null;
         int k;
@@ -167,6 +229,15 @@ public class SuffixTree {
         return result;
     }
 
+    /**
+     * Second step search where it looks in the Node for a suffix of the string (taking as starting point 'ini'),
+     * if the match doesnt occurs in this node, it will search in his children or will return null if it fail.
+     *
+     * @param node the current node where is searched the string
+     * @param str the searched string
+     * @param ini the starting point of the suffix of the string.
+     * @return
+     */
     private Node innerSearch(Node node, String str, int ini){
         IPointer nk = node.getKey();
         int pos = bifurcationPoint(text.substring(nk.getPosition(), nk.getPosition() + nk.getLength()), str.substring(ini));
@@ -187,6 +258,13 @@ public class SuffixTree {
         return null;
     }
 
+    /**
+     * Give the index where the characters of two strings start to be different.
+     *
+     * @param str1 String used in the comparison
+     * @param str2 String used n the comparison
+     * @return the point (index) where the two string differs.
+     */
     private int bifurcationPoint(String str1, String str2){
         int i = 0;
         int m = Math.min(str1.length(), str2.length());
@@ -198,21 +276,33 @@ public class SuffixTree {
         return i;
     }
 
+    /**
+     * give the split position of two keys, which is where the keys differs in their content (String)
+     * @param p1 a Pointer key used to comparison
+     * @param p2 a Pointer key used to comparison
+     * @return the point(index) where the two string differs.
+     */
     private int splitPosition(IPointer p1, IPointer p2){
-        int i = 0;
-        int m = Math.min(p1.getLength(), p2.getLength());
-        while (i < m){
-            if (text.charAt(p1.getPosition() + i) != text.charAt(p2.getPosition() + i))
-                break;
-            i++;
-        }
-        return i;
+        String s1 = text.substring(p1.getPosition(), p1.getPosition() + p1.getLength());
+        String s2 = text.substring(p2.getPosition(), p2.getPosition() + p2.getLength());
+        return bifurcationPoint(s1, s2);
     }
 
+    /**
+     * Search function that gives True if a String (could be as a prefix of a suffix) is found in the Suffix Tree.
+     * @param str the searched string
+     * @return True if the string is found, false if not.
+     */
     public boolean search(String str){
         return nodeSearch(str) != null;
     }
 
+    /**
+     * Count function that gives the number of apparitions of a String (could be as a prefix of a suffix) in the
+     * Text using the suffix Tree.
+     * @param str the searched string
+     * @return the number of apparitions
+     */
     public int count(String str){
         Node result = nodeSearch(str);
         if (result == null)
@@ -220,6 +310,11 @@ public class SuffixTree {
         return result.getCount();
     }
 
+    /**
+     * Locate function that gives the locations where a string appears in the Text using the suffix tree.
+     * @param str the searched string
+     * @return a list with the apparition positions (ad index, starting from 0) of the string.
+     */
     public List<Integer> locate(String str){
         List<Integer> out = new ArrayList<>();
         Node result = nodeSearchRoot(str);
@@ -230,16 +325,22 @@ public class SuffixTree {
                 out.add(pos);
             }
         }
-//        out.addAll(result.getKey().getPositions());
         Collections.sort(out);
         return out;
     }
 
+    /**
+     * top-k-q function that gives the 'k' Strings of length 'q' that appears the most in the text using the
+     * Suffix Tree.
+     * @param k the number of string looked for, the output could be less that this number
+     * @param q the length of the string that are looked for
+     * @return a list with the found Strings (best k using as parameter the number of apparitions)
+     */
     public List<String> topKQ(int k, int q){
         StringQueue priQueue = new StringQueue(k);
         for (int i = 0; i < root.size(); i++){
             innerTopKQQ(root.getNode(i), q, q, priQueue);
-            if (priQueue.size() >= k)
+            if (i >= k && priQueue.size() >= k)
                 break;
         }
         List<String> result = new ArrayList<>();
@@ -249,51 +350,39 @@ public class SuffixTree {
         return result;
     }
 
+    /**
+     * inner top-k-q search function that take the current node and check if contains the string of
+     * the specific length (q), if is found, it will add the String to a Priority Queue using as priority
+     * the count number. In case it fails, it will search in ALL children nodes for a string of length 'q'
+     * minus node key length.
+     *
+     *
+     * @param node the current node where topKQ search is performed
+     * @param q the current length of the desired string, this number will decrease when the code go to a child.
+     * @param originalQ the original length of the desired string, this number will remains constant.
+     * @param pq the Priority Queue where the string is stored.
+     */
     private void innerTopKQQ(Node node, int q, int originalQ, StringQueue pq){
-//        System.out.println("searching topKQ(q="+q+", origQ="+originalQ+") in node: " + node.toPrint(text));
         if (node.getKey().getLength() < q){
-//            System.out.println(":: node is shortest");
-//            tengo que bajar
-//            pero si estoy en una hoja, retorno una lista vacia
             if (!node.isLeaf()){
-//                System.out.println(":: node is internal, so we descend");
-//                bajo a cada hijo a realizar la misma busqueda
                 for (int i =0; i < node.childrenSize(); i++){
                     innerTopKQQ(node.getChild(i), q - node.getKey().getLength(), originalQ, pq);
                 }
-//                System.out.println(":: done searching children for node: " + node.toPrint(text));
             }
-//            else
-//                System.out.println(":: node is leaf so we end");
         }
-//        si el largo es igual y no soy hoja, entonces contengo el string del largo especificado
-//        NOTA: EXCLUIMOS EL $
         else if (node.getKey().getLength() == q && !node.isLeaf()){
             String str = text.substring(node.getKey().getPosition() - (originalQ - q), node.getKey().getPosition() + node.getKey().getLength());
-//            String sb = ":: node is equal length, we get <" +
-//                    str +
-//                    ">:[" +
-//                    node.getCount() +
-//                    "]";
-//            System.out.println(sb);
             pq.add(str, node.getCount());
         }
-//        en el largo es igual y soy hoja, entonces fallo y entrego la lista vacia
-//        si el largo es mayor, entonces contengo el string, pero debo cortarlo al largo deseado
         else if (node.getKey().getLength() > q){
             String str = text.substring(node.getKey().getPosition() - (originalQ - q), node.getKey().getPosition() + q);
-//            StringBuilder sb = new StringBuilder();
-//            sb.append(":: node is larger, we get <");
-//            sb.append(str);
-//            sb.append(">:[");
-//            sb.append(node.getCount());
-//            sb.append("]");
-//            System.out.println(sb.toString());
             pq.add(str, node.getCount());
         }
-//        System.out.println(":: we end");
     }
 
+    /**
+     * additional function that allow to visualize a suffix Tree
+     */
     public void visualize() {
         if (root.size() == 0) {
             System.out.println("<empty>");
@@ -308,6 +397,11 @@ public class SuffixTree {
         visualize_f(root.getNode(root.size() - 1), "   ");
     }
 
+    /**
+     * additional function that is used to visualize a suffix Tree.
+     * @param node the node to visualize
+     * @param pre a string with previous characters to used in the visualization.
+     */
     private void visualize_f(Node node, String pre) {
         if (node.childrenSize() == 0){
             System.out.println("- " + node.toPrint(text));
@@ -320,16 +414,5 @@ public class SuffixTree {
         }
         System.out.print(pre + "└─");
         visualize_f(node.getChild(node.childrenSize() - 1), pre + "  ");
-    }
-
-    public static void main(String[] args) {
-        SuffixTree tree = new SuffixTree("banana y bababana$");
-        tree.visualize();
-        System.out.println(tree.count("a"));
-        System.out.println(tree.count("na"));
-        System.out.println(tree.count("ba"));
-        System.out.println(tree.locate("na"));
-        System.out.println(tree.locate("y bababana$"));
-        System.out.println(tree.topKQ(4, 3));
     }
 }

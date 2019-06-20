@@ -3,17 +3,22 @@ package pointer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Pointer class that implements Pointer Interface for a general Node class
+ */
 public class Pointer implements IPointer {
+    /**
+     * length of the prefix-suffix that is pointed
+     */
     private int length;
+    /**
+     * position of the preffix-suffix that is pointed
+     */
     private int position;
 
     public Pointer(int length, int position){
         this.length = length;
         this.position = position;
-    }
-
-    public Pointer(){
-        this(0, 0);
     }
 
 

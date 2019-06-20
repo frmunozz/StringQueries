@@ -3,16 +3,19 @@ package pointer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Root Pointer class that extends Pointer class, this class implements a Pointer in a Root node
+ * since it hold different information that an internal node of the suffix tree structure.
+ */
 public class RootPointer extends Pointer{
+    /**
+     * List with the other positions where the current prefix-suffix occurs.
+     */
     private List<Integer> otherPositions;
 
     public RootPointer(int length, int position){
         super(length, position);
         otherPositions = new ArrayList<>();
-    }
-
-    public RootPointer(){
-        this(0, 0);
     }
 
     @Override

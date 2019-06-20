@@ -23,7 +23,7 @@ public class FileReader {
      * @param data the byte array used to create the string.
      * @param position the position in the byte array from where we start taking the bytes.
      * @param length the number of characters (i.e. the number of bytes).
-     * @return
+     * @return exceptions in read
      */
     public static String bytesToString(byte[] data, int position, int length){
         StringBuilder sb = new StringBuilder();
@@ -55,7 +55,7 @@ public class FileReader {
     /**
      * return the lenght of the file
      * @return long numbert that represent length of file in bytes.
-     * @throws IOException
+     * @throws IOException exceptions in access file
      */
     public static long getLenght(String filename) throws IOException {
         RandomAccessFile file = new RandomAccessFile(filename, "r");
@@ -64,6 +64,12 @@ public class FileReader {
         return ret;
     }
 
+    /**
+     * write an array of bytes to a new file of the given name
+     * @param values the array of bytes
+     * @param filename the file name where the bytes will be written
+     * @throws IOException exceptions in write methods
+     */
     public static void writeNewFile(byte[] values, String filename) throws IOException {
         RandomAccessFile file = new RandomAccessFile(filename, "rw");
         file.seek(0);
