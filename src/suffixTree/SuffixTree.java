@@ -4,7 +4,6 @@ import pointer.IPointer;
 import pointer.Pointer;
 import pointer.RootPointer;
 import queue.nodeQ.NodeQueue;
-import queue.stringQ.StringObject;
 import queue.stringQ.StringQueue;
 
 import java.util.ArrayList;
@@ -43,12 +42,14 @@ public class SuffixTree {
      * internal variable that will store the number of nodes present in the Suffix Tree
      */
     private int counterOfNodes;
+    private int leafNones;
 
     public SuffixTree(String text){
         this.text = text;
         this.textLength = text.length();
         this.root = new NodeQueue(maxSize);
         this.counterOfNodes = 0;
+        this.leafNones = 0;
         buildTree();
     }
 
@@ -82,6 +83,8 @@ public class SuffixTree {
         }
         if (k == root.size()){
             root.add(new Node(new RootPointer(textLength - i, i)));
+            counterOfNodes++;
+            leafNones++;
         }
     }
 
@@ -148,9 +151,11 @@ public class SuffixTree {
     private void extend(Node node, Pointer p, int pos){
         if (node.isLeaf()){
             node.mutate();
+            leafNones--;
         }
         p.forward(pos);
         node.addChild(new Node(p));
+        leafNones++;
         this.counterOfNodes++;
     }
 
@@ -178,15 +183,20 @@ public class SuffixTree {
 
         Node c1 = new Node(p1, 1);
         Node c0 = new Node(p0, 1);
-        if (node.isLeaf())
+        if (node.isLeaf()){
             node.mutate();
+            leafNones--;
+        }
         else{
             c0.mutate();
+            leafNones--;
             c0.addAllChildren(node.getChildren());
             node.clearChildren();
         }
         node.addChild(c1);
+        leafNones++;
         node.addChild(c0);
+        leafNones++;
         this.counterOfNodes++;
     }
 
